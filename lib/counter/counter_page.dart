@@ -15,7 +15,15 @@ class MyHomePage extends StatefulWidget {
 /**
  * _MyHomePageState 是 MyHomePage 的状态类
  */
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMixin {
+
+  /**
+   * 重构了 AutomaticKeepAliveClientMixin 的
+   * wantKeepAlive 方法保持活跃,在切换的时候不被销毁
+   */
+  @override
+  bool get wantKeepAlive => true;  // 保持状态不被销毁
+
   int _counter = 0;     /*状态变量_counter*/
 
   void _incrementCounter() {

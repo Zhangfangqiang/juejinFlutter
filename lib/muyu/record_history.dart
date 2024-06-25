@@ -51,10 +51,9 @@ class RecordHistory extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar:_buildAppBar(),
-      body: Column(
-        children: List.generate(
-            records.length, (index) => _buildItem(context, records[index])
-        ),
+      body: ListView.builder(
+        itemCount: records.length,
+        itemBuilder: (context, index) => _buildItem(context, records[index]),
       ),
     );
   }

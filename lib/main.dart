@@ -3,8 +3,11 @@ import 'guess/guess_page.dart';
 import 'counter/counter_page.dart';
 import 'package:flutter/material.dart';
 import 'navigation/app_navigation.dart';
+import './storage/db_storage/db.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DbStorage.instance.open();
   runApp(const MyApp());
 }
 

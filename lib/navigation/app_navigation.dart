@@ -4,15 +4,18 @@ import 'package:juejinflutter/paper/paper.dart';
 import 'package:juejinflutter/muyu/muyu_page.dart';
 import 'package:juejinflutter/guess/guess_page.dart';
 import 'package:juejinflutter/counter/counter_page.dart';
+import 'package:juejinflutter/net_article/views/net_articel_page.dart';
 
 class AppNavigation extends StatefulWidget {
   const AppNavigation({Key? key}) : super(key: key);
+
   @override
   State<AppNavigation> createState() => _AppNavigationState();
 }
+
 class _AppNavigationState extends State<AppNavigation> {
-  int _index                 = 0;                   //页面的索引值
-  final PageController _ctrl = PageController();    //用于控制 PageView 的页面切换
+  int _index = 0; //页面的索引值
+  final PageController _ctrl = PageController(); //用于控制 PageView 的页面切换
 
   /**
    * 页面菜单按钮
@@ -22,6 +25,7 @@ class _AppNavigationState extends State<AppNavigation> {
     MenuData(label: '猜数字', icon: Icons.question_mark),
     MenuData(label: '电子木鱼', icon: Icons.my_library_music_outlined),
     MenuData(label: '白板绘制', icon: Icons.palette_outlined),
+    MenuData(label: '网络请求', icon: Icons.network_wifi_sharp),
   ];
 
   /**
@@ -36,13 +40,14 @@ class _AppNavigationState extends State<AppNavigation> {
 
   Widget _buildContent() {
     return PageView(
-      physics: const NeverScrollableScrollPhysics(),      //禁止用户手滑切换
-      controller: _ctrl,                                  //用户页面控制器
+      physics: const NeverScrollableScrollPhysics(), //禁止用户手滑切换
+      controller: _ctrl, //用户页面控制器
       children: const [
-         MyHomePage(title:"计数器"),
-         GuessPage(title:"猜数字"),
-         MuyuPage(),
-         Paper(),
+        MyHomePage(title: "计数器"),
+        GuessPage(title: "猜数字"),
+        MuyuPage(),
+        Paper(),
+        NetArticlePage(),
       ],
     );
   }
@@ -54,7 +59,6 @@ class _AppNavigationState extends State<AppNavigation> {
         Expanded(
           child: _buildContent(),
         ),
-
         AppBottomBar(
           currentIndex: _index,
           onItemTap: _onChangePage,
@@ -64,4 +68,3 @@ class _AppNavigationState extends State<AppNavigation> {
     );
   }
 }
-

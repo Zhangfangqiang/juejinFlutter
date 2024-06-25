@@ -14,6 +14,9 @@ import 'models/image_option.dart';
 import 'models/merit_record.dart';
 import 'options/select_audio.dart';
 import 'options/select_image.dart';
+import 'package:juejinflutter/storage/sp_storage.dart';
+import 'package:juejinflutter/storage/db_storage/db.dart';
+
 
 class MuyuPage extends StatefulWidget {
   const MuyuPage({Key? key}) : super(key: key);
@@ -21,7 +24,14 @@ class MuyuPage extends StatefulWidget {
   State<MuyuPage> createState() => _MuyuPageState();
 }
 
-class _MuyuPageState extends State<MuyuPage> {
+class _MuyuPageState extends State<MuyuPage> with AutomaticKeepAliveClientMixin {
+  /**
+   * 重构了 AutomaticKeepAliveClientMixin 的
+   * wantKeepAlive 方法保持活跃,在切换的时候不被销毁
+   */
+  @override
+  bool get wantKeepAlive => true; // 保持状态不被销毁
+
   int _counter = 0;
   AudioPool? pool;
   MeritRecord? _cruRecord;
@@ -63,6 +73,20 @@ class _MuyuPageState extends State<MuyuPage> {
   void initState() {
     super.initState();
     _initAudioPool();
+    initStateAsync();
+  }
+
+  /**
+   * 异步调用方法
+   */
+  initStateAsync() async {
+    var data = await SpStorage.instance.readMuYUConfig();
+
+    _counter          = data['counter'] ?? 0;
+    _activeImageIndex = data ['activeImageIndex'] ?? 0;
+    _activeAudioIndex = data['activeAudioIndex'] ?? 0;
+    _records          = await DbStorage.instance.meritRecordDao.query();      //查询所有数据到历史列表
+    setState(() {});
   }
 
   /**
@@ -111,6 +135,11 @@ class _MuyuPageState extends State<MuyuPage> {
     Navigator.of(context).pop();
     if (value == _activeAudioIndex) return;
     _activeAudioIndex = value;
+    SpStorage.instance.saveMuYUConfig(
+        counter: _counter,
+        activeImageIndex: _activeImageIndex,
+        activeAudioIndex: _activeAudioIndex);
+
     pool = await FlameAudio.createPool(
       activeAudio,
       maxPlayers: 1,
@@ -137,8 +166,12 @@ class _MuyuPageState extends State<MuyuPage> {
    * 选中图片后的事件
    */
   void _onSelectImage(int value) {
-    Navigator.of(context).pop();    //
+    Navigator.of(context).pop();
     if (value == _activeImageIndex) return;
+    SpStorage.instance.saveMuYUConfig(
+        counter: _counter,
+        activeImageIndex: _activeImageIndex,
+        activeAudioIndex: _activeAudioIndex);
     setState(() {
       _activeImageIndex = value;
     });
@@ -147,8 +180,8 @@ class _MuyuPageState extends State<MuyuPage> {
   /**
    * 敲击木鱼的方法
    */
-  void _onKnock() {
-    pool?.start();        //播放音乐
+  void _onKnock() async {
+    pool?.start(); //播放音乐
 
     setState(() {
       _cruRecord = MeritRecord(
@@ -159,8 +192,15 @@ class _MuyuPageState extends State<MuyuPage> {
         audioOptions[_activeAudioIndex].name,
       );
 
-      _counter += _cruRecord!.value;    //MeritRecord 构造的情况下,可能会出现其他情况, 会为空, 所以要断言一下
-      _records.add(_cruRecord!);        // 添加功德记录
+      _counter += _cruRecord!.value;                        //MeritRecord 构造的情况下,可能会出现其他情况, 会为空, 所以要断言一下
+      _records.add(_cruRecord!);                            //添加功德记录
+      DbStorage.instance.meritRecordDao.insert(_cruRecord!);//添加数据
+
+      /*存储木鱼数据*/
+       SpStorage.instance.saveMuYUConfig(
+          counter: _counter,
+          activeImageIndex: _activeImageIndex,
+          activeAudioIndex: _activeAudioIndex);
     });
   }
 

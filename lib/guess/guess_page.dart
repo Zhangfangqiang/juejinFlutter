@@ -1,9 +1,10 @@
 import 'dart:math';
+import 'dart:convert';
 import 'guess_app_bar.dart';
 import 'result_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:juejinflutter/storage/sp_storage.dart';
 
 class GuessPage extends StatefulWidget {
   const GuessPage({super.key, required this.title});
@@ -14,7 +15,14 @@ class GuessPage extends StatefulWidget {
   State<GuessPage> createState() => _GuessPageState();
 }
 
-class _GuessPageState extends State<GuessPage> with SingleTickerProviderStateMixin {
+class _GuessPageState extends State<GuessPage> with SingleTickerProviderStateMixin ,AutomaticKeepAliveClientMixin {
+  /**
+   * 重构了 AutomaticKeepAliveClientMixin 的
+   * wantKeepAlive 方法保持活跃,在切换的时候不被销毁
+   */
+  @override
+  bool get wantKeepAlive => true;  // 保持状态不被销毁
+
   late AnimationController controller;
 
   int _type = 0; //0不知道是大是小, 1 大 2小
@@ -34,6 +42,17 @@ class _GuessPageState extends State<GuessPage> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
+    _initializeAsync();
+  }
+
+  /**
+   * 异步初始化
+   */
+  _initializeAsync() async {
+    var data = await SpStorage.instance.readGuessConfig();
+    _guessing = data['guessing'] ?? false;
+    _value = data['value'] ?? 0;
+    setState(() {});
   }
 
   /**
@@ -54,6 +73,7 @@ class _GuessPageState extends State<GuessPage> with SingleTickerProviderStateMix
     setState(() {
       _guessing = true;
       _value = _random.nextInt(100);
+      SpStorage.instance.saveGuessConfig(guessing: _guessing,value: _value);
     });
   }
 
